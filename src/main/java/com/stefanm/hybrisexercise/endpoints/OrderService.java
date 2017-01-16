@@ -1,13 +1,14 @@
 package com.stefanm.hybrisexercise.endpoints;
 
+import com.stefanm.hybrisexercise.data.*;
 import com.stefanm.hybrisexercise.data.Currency;
-import com.stefanm.hybrisexercise.data.CustomerDetails;
-import com.stefanm.hybrisexercise.data.LineItem;
-import com.stefanm.hybrisexercise.data.Order;
+import com.stefanm.hybrisexercise.endpoints.orderhistory.OrderHistoryRequest;
+import com.stefanm.hybrisexercise.endpoints.orderhistory.OrderHistoryResponse;
 import com.stefanm.hybrisexercise.endpoints.placeorder.PlaceOrderRequest;
 import com.stefanm.hybrisexercise.endpoints.placeorder.PlaceOrderResponse;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Stefan on 15-Jan-17.
@@ -46,8 +47,36 @@ public class OrderService {
         final CustomerDetails customerDetails = new CustomerDetails(request.getEmail(), request.getPostalCode(), request.getCountryCode());
         order.setCustomerDetails(customerDetails);
 
-        orders.add(order);
+        synchronized (orders) {
+            orders.add(order);
+        }
 
         return new PlaceOrderResponse(order.getOrderID(), order.getOrderDate(), order.getTotalCost());
+    }
+
+    /**
+     * Retrieves an order history for the customer.
+     *
+     * @param request the order history request.
+     * @return the order history response.
+     */
+    public static OrderHistoryResponse retrieveHistory(OrderHistoryRequest request) {
+
+        final List<Order> orderHistory = new LinkedList<>();
+
+        if (request.getEmail() != null) {
+            synchronized (orders) {
+                orderHistory.addAll(orders.stream().filter(order -> order.getCustomerDetails().getEmail().equals(request.getEmail())).filter(order -> request.getOrderStatusFilter() == null ||
+                        order.getOrderStatus().equals(OrderStatus.valueOf(request.getOrderStatusFilter()))).collect(Collectors.toList()));
+            }
+        }
+
+        final OrderHistoryResponse response = new OrderHistoryResponse();
+
+        for (Order order : orderHistory) {
+            response.getOrders().add(order);
+        }
+
+        return response;
     }
 }

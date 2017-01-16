@@ -1,6 +1,6 @@
 package com.stefanm.hybrisexercise.configuration;
 
-import com.stefanm.hybrisexercise.endpoints.placeorder.PlaceOrderEndpoint;
+import com.stefanm.hybrisexercise.endpoints.OrderEndpoint;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
@@ -10,7 +10,7 @@ import org.springframework.context.annotation.ComponentScan;
  */
 
 @SpringBootApplication
-@ComponentScan(basePackageClasses = PlaceOrderEndpoint.class)
+@ComponentScan(basePackageClasses = OrderEndpoint.class)
 public class HybrisExerciseConfiguration {
 
     public static void main(String[] args) {
